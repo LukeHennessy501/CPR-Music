@@ -5,10 +5,10 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import { Card, Col, Row } from 'react-bootstrap';
 import dynamic from 'next/dynamic';
-import RTE from './rte';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
+import RTE from './rte';
 import { mutateGradeSubmission } from '../../../api';
 
 const FlatEditor = dynamic(() => import('../../flatEditor'), {
@@ -100,8 +100,8 @@ export default function GradePerform({ submissions }) {
       <Col>
         {submissions ? (
           <h2>
-            Grading: {submissions?.[0].assignment?.part?.piece?.name} -{' '}
-            {submissions?.[0].assignment.activity.activity_type.category}{' '}
+            Grading: {submissions?.[0]?.assignment?.part?.piece?.name} -{' '}
+            {submissions?.[0]?.assignment?.activity?.activity_type?.category}{' '}
             Activity
           </h2>
         ) : (

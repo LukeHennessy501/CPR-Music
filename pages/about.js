@@ -117,6 +117,7 @@ function About() {
           <a target="_blank" rel="noopener noreferrer" href="https://portfolium.com/AlexDumo" >Alex Dumouchelle</a>{' '}
           (Undergraduate Student, James Madison University)
         </li>
+        <li>Zoey Fox (Consultant)</li>
         <li>Jonah Giblin (Undergraduate Student, James Madison University)</li>
         <li>
           <a target="_blank" rel="noopener noreferrer" href="http://benguerrero.com/">Benjamin Guerrero, MM</a> (Preparing
@@ -131,6 +132,8 @@ function About() {
           Innovation Leader, Center for Inclusive Music Engagement; James
           Madison University)
         </li>
+        <li><a target = "_blank" rel="noopener nonreferrer" href="https://www.linkedin.com/in/chris-hopkins-382238221/">
+          Chris Hopkins </a>{' '}(Undergraduate Student, James Madison University)</li>
         <li>
           Heidi Lucas, DMA (Visiting Assistant Professor of Brass and Music
           Education, University of Delaware)

@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 // import { assignPiece, unassignPiece } from '../../actions';
 import Link from 'next/link';
 import Alert from 'react-bootstrap/Alert';
+import { useState } from 'react';
 import {
   getAssignedPieces,
   getAllPieces,
@@ -18,7 +19,6 @@ import {
   mutateAssignPiece,
   getStudentAssignments,
 } from '../../api';
-import { useState } from 'react';
 
 // for the teacher, it should:
 // 1. permit assigning of pieces
@@ -35,7 +35,9 @@ export default function TeacherCourseView() {
     isLoading,
     error,
     data: allPieces,
-  } = useQuery('allPieces', getAllPieces);
+  } = useQuery('allPieces', getAllPieces(slug), {
+    enabled: !!slug,
+  });
   const {
     isLoading: loaded,
     error: assignmentsError,
@@ -124,7 +126,7 @@ export default function TeacherCourseView() {
       // The query will ignore query client invalidateQueries and refetchQueries calls that would normally result in the query refetching.
     },
   });
-  const assign = (piece) => assignMutation.mutate(piece);
+  const assign = (piecePlan) => assignMutation.mutate(piecePlan);
   if (isLoading || isLoadingAssignedActs || !assignedPieces)
     return 'Loading...';
   if (error || errorAssignedActs)
@@ -172,7 +174,7 @@ export default function TeacherCourseView() {
                     className="d-flex justify-content-between align-items-center"
                   >
                     <div>{piece.name}</div>
-                    <Button onClick={() => assign(piece)}>
+                    <Button onClick={() => assign(piece.piece_plan_id)}>
                       Assign <FaPlus />
                     </Button>
                   </ListGroupItem>
@@ -187,51 +189,56 @@ export default function TeacherCourseView() {
               defaultActiveKey={Object.values(assignedPieces)[0]}
               alwaysOpen
             >
-              {Object.values(assignedPieces).map((piece) => (
-                <Accordion.Item eventKey={piece.id} key={piece.id}>
-                  <Accordion.Header>{piece.name}</Accordion.Header>
-                  <Accordion.Body>
-                    <Row>
-                      <Col md={9}>
-                        <ListGroup>
-                          {piece.activities &&
-                            Object.values(piece.activities).length > 0 &&
-                            Object.keys(piece.activities).map((activityKey) => (
-                              <ListGroupItem
-                                key={activityKey}
-                                className="d-flex justify-content-between"
-                              >
-                                <span className="me-auto">{`${piece.activities[activityKey].category} ${piece.activities[activityKey].name}`}</span>
-                                <Link
-                                  href={`/courses/${slug}/${piece.slug}/${piece.activities[activityKey].category}/${piece.activities[activityKey].name}/grade`}
-                                  passHref
-                                >
-                                  <a className="btn btn-primary">
-                                    Grade <FaMarker />
-                                  </a>
-                                </Link>
-                                {/* <Button variant="danger" onClick={() => {console.log('unassign click', piece);unassign(piece)}}>
+              {Object.values(assignedPieces).map((piece) => {
+                console.log('piece', piece);
+                return (
+                  <Accordion.Item eventKey={piece.id} key={piece.id}>
+                    <Accordion.Header>{piece.name}</Accordion.Header>
+                    <Accordion.Body>
+                      <Row>
+                        <Col md={9}>
+                          <ListGroup>
+                            {piece.activities &&
+                              Object.values(piece.activities).length > 0 &&
+                              Object.keys(piece.activities).map(
+                                (activityKey) => (
+                                  <ListGroupItem
+                                    key={activityKey}
+                                    className="d-flex justify-content-between"
+                                  >
+                                    <span className="me-auto">{`${piece.activities[activityKey].category} ${piece.activities[activityKey].name}`}</span>
+                                    <Link
+                                      href={`/courses/${slug}/${piece.slug}/${piece.activities[activityKey].category}/${piece.activities[activityKey].name}/grade`}
+                                      passHref
+                                    >
+                                      <a className="btn btn-primary">
+                                        Grade <FaMarker />
+                                      </a>
+                                    </Link>
+                                    {/* <Button variant="danger" onClick={() => {console.log('unassign click', piece);unassign(piece)}}>
                                   Delete
                                 </Button> */}
-                              </ListGroupItem>
-                            ))}
-                        </ListGroup>
-                      </Col>
-                      <Col style={{ textAlign: 'center' }}>
-                        <Button
-                          variant="danger"
-                          onClick={() => {
-                            console.log('unassign click', piece);
-                            unassign(piece);
-                          }}
-                        >
-                          Delete <FaTrash />
-                        </Button>
-                      </Col>
-                    </Row>
-                  </Accordion.Body>
-                </Accordion.Item>
-              ))}
+                                  </ListGroupItem>
+                                )
+                              )}
+                          </ListGroup>
+                        </Col>
+                        <Col style={{ textAlign: 'center' }}>
+                          <Button
+                            variant="danger"
+                            onClick={() => {
+                              console.log('unassign click', piece);
+                              unassign(piece);
+                            }}
+                          >
+                            Delete <FaTrash />
+                          </Button>
+                        </Col>
+                      </Row>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                );
+              })}
             </Accordion>
           ) : (
             <p>There are no pieces assigned to this course.</p>

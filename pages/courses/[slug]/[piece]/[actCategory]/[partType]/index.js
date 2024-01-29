@@ -46,14 +46,15 @@ export default function PerformMelody() {
   );
   useEffect(() => {
     if (loadedActivities) {
+      console.log('dispatch', activities);
       dispatch(
         fetchSingleStudentAssignment({
           slug,
           assignmentId: activities[slug].filter(
             (assn) =>
-              assn.part.piece.slug === piece &&
-              assn.activity.part_type === partType &&
-              assn.activity.activity_type.category === actCategory
+              assn.piece_slug === piece &&
+              assn.part_type === partType &&
+              assn.activity_type_category === actCategory
           )?.[0]?.id,
         })
       );
@@ -90,7 +91,17 @@ export default function PerformMelody() {
           </p>
         </Alert>
       ) : (
-        <FlatEditor score={parsedScore} />
+        <>
+          <FlatEditor score={parsedScore} />
+          {assignment?.part?.sample_audio && (
+            <dl>
+              <dt>Sample Recording</dt>
+              <dd>
+                <audio controls src={assignment.part.sample_audio} />
+              </dd>
+            </dl>
+          )}
+        </>
       )}
       {partType && (
         <Recorder

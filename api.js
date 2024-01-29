@@ -26,9 +26,8 @@ export function getEnrollments() {
 }
 
 export function getStudentAssignments(slug) {
-  return () => {
-    // console.log('getStudentAssignments');
-    return getSession()
+  return () =>
+    getSession()
       .then((session) => {
         const token = session.djangoToken;
         return fetch(
@@ -42,13 +41,13 @@ export function getStudentAssignments(slug) {
         );
       })
       .then((response) => response.json())
-      .then((results) => {
-        // console.log('results', results);
-        return results;
-      })
+      // .then((results) => {
+      //   // console.log('results', results);
+      //   return results;
+      // })
       .then((results) => {
         const grouped = results.reduce((acc, obj) => {
-          const key = obj.part.piece.name;
+          const key = obj.piece_name;
           if (!acc[key]) {
             acc[key] = [];
           }
@@ -65,47 +64,61 @@ export function getStudentAssignments(slug) {
         return grouped;
         // Object.keys(grouped).sort()
       });
-  };
 }
 
-export function getAllPieces() {
+export function getAllPieces(courseSlug) {
   // console.log('begin: getAllPieces')
-  return getSession().then((session) => {
-    const token = session.djangoToken;
-    return fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/pieces/`, {
-      headers: {
-        Authorization: `Token ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(assertResponse)
-      .then((response) =>
-        // console.log('end: getAllPieces')
-        response.json()
-      );
-  });
+  return () =>
+    getSession().then((session) => {
+      const token = session.djangoToken;
+      // return fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/pieces/`, {
+      // http://localhost:8000/api/courses/6th-grade-band/piece-plans/
+      return fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/courses/${courseSlug}/piece-plans/`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+        .then(assertResponse)
+        .then((response) => response.json())
+        .then((json) => {
+          // console.log('end: getAllPieces')
+          const result = json;
+          return result.map((r) => ({...r.piece, piece_plan_id: r.id}));
+        });
+    });
 }
 export function getAssignedPieces(assignments) {
   return () => {
     console.log('getAssignedPieces', assignments);
     const pieces = {};
     if (Object.values(assignments).length > 0) {
+      console.log('assignments', assignments);
       for (const pieceKey of Object.keys(assignments)) {
         for (const pieceAssignment of assignments[pieceKey]) {
           //   pieces[pieceAssignment.part.piece.id] = pieceAssignment.part.piece;
           // }
           if (!(pieceKey in pieces)) {
             pieces[pieceKey] = {
-              ...pieceAssignment.part.piece,
+              id: pieceAssignment.piece_id,
+              name: pieceAssignment.piece_name,
               activities: {},
+              slug: pieceAssignment.piece_slug,
             };
           }
           console.log('pieceAssignment', pieceAssignment);
-          const actType = pieceAssignment.activity.activity_type;
-          pieces[pieceKey].activities[`${actType.category}-${actType.name}`] =
-            actType;
+          const actType = pieceAssignment.activity_type_name;
+          const actCat = pieceAssignment.activity_type_category;
+          pieces[pieceKey].activities[`${actCat}-${actType}`] = {
+            name: actType,
+            category: actCat,
+          };
         }
       }
+      console.log('pieces', pieces);
     }
     return pieces;
     // console.log('foreach', Object.values(assignments));
@@ -150,19 +163,19 @@ export function getAssignedPieces(assignments) {
 }
 
 export function mutateAssignPiece(slug) {
-  return (piece) =>
+  return (piecePlanId) =>
     getSession().then((session) => {
       const token = session.djangoToken;
       // console.log('assignpiece now', token, slug, piece)
       return fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/courses/${slug}/assign/`,
+        `${process.env.NEXT_PUBLIC_BACKEND_HOST}/api/courses/${slug}/assign_piece_plan/`,
         {
           headers: {
             Authorization: `Token ${token}`,
             'Content-Type': 'application/json',
           },
           method: 'POST',
-          body: JSON.stringify({ piece_id: piece.id }),
+          body: JSON.stringify({ piece_plan_id: piecePlanId }),
           // body: data,
         }
       )
@@ -304,14 +317,14 @@ export function getMySubmissionsForAssignment({ slug, assignmentId }) {
     })
     .then(assertResponse)
     .then((response) => response.json())
-    .then((resultsJson) => {
-      // console.log(
-      //   'end: getMySubmissionsForAssignment',
-      //   resultsJson,
-      //   resultsJson.length
-      // );
-      return resultsJson;
-    });
+    // .then((resultsJson) => {
+    //   // console.log(
+    //   //   'end: getMySubmissionsForAssignment',
+    //   //   resultsJson,
+    //   //   resultsJson.length
+    //   // );
+    //   return resultsJson;
+    // });
 }
 
 export function mutateCourse(slug) {
